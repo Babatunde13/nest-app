@@ -12,5 +12,9 @@ describe('AppController', () => {
     }).compile();
 
     appController = app.get<AppController>(AppController);
+
+    it('should r', () => {
+      expect(appController.postHello('Babatunde')).toBe('Hello Babatunde')
+    });
   });
 });

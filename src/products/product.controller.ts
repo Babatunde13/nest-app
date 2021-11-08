@@ -1,13 +1,22 @@
-import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
 import { ProductsService } from './product.service';
-import { createProduct } from './types';
+import { CreateProduct, CreateOrder, Product } from './types';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Post('/')
-  createProduct(@Body() body: createProduct) {
+  @Post()
+  createProduct(@Body() body: CreateProduct) {
     // validate body
     if (!body.product || typeof body.product !== 'string') {
       return {
@@ -16,10 +25,6 @@ export class ProductsController {
         ok: false,
       };
     }
-    body = {
-      product: body.product,
-      price: body.price,
-    };
 
     if (!body.price || typeof body.price !== 'number') {
       return {
@@ -28,10 +33,43 @@ export class ProductsController {
         ok: false,
       };
     }
+
+    body = {
+      product: body.product,
+      price: body.price,
+    };
+
     return this.productsService.createProduct(body);
   }
 
-  @Get('/')
+  @Post('/order/:id')
+  createOrder(@Body() order: CreateOrder, @Param('id') id: string) {
+    // validate order
+    if (!order.quantity || !order.userId) {
+      return {
+        status: 'bad',
+        message: 'quantity of order should be passed ',
+        ok: false,
+      };
+    }
+
+    if (!id) {
+      return {
+        status: 'bad',
+        message: 'Product id should be a string and is required',
+        ok: false,
+      };
+    }
+
+    const data = {
+      _id: id,
+      order,
+    };
+
+    return this.productsService.createOrder(data);
+  }
+
+  @Get()
   getProducts(
     @Query('product') product: string,
     @Query('price') price: number
@@ -39,8 +77,18 @@ export class ProductsController {
     return this.productsService.getProducts(product, price);
   }
 
-  @Get('/:id')
+  @Get(':id')
   getProduct(@Param('id') id: string) {
     return this.productsService.getProduct(id);
+  }
+
+  @Put(':id')
+  updateProduct(@Param('id') id: string, @Body() body: Product) {
+    return this.productsService.updateProduct({ _id: id, ...body });
+  }
+
+  @Delete(':id')
+  deleteProduct(@Param('id') id: string) {
+    return this.productsService.deleteProduct(id);
   }
 }
