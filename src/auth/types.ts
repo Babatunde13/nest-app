@@ -3,6 +3,6 @@ export type SignInUser = {
   password: string;
 };
 
-export type SignUpUser = { name: string } & SignInUser;
+export type SignUpUser = { fullname: string } & SignInUser;
 
 export type User = { _id: string, passwordHash: string } & Omit<SignUpUser, 'password'>;

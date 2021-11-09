@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetCurrentUserById } from 'src/utils/getUserById.decorator';
+import { IProduct } from './product.model';
 import { ProductsService } from './product.service';
 import { CreateProduct, CreateOrder, Product } from './types';
 
@@ -45,10 +46,10 @@ export class ProductsController {
     body = {
       name: body.name,
       price: body.price,
-      user: userId,
+      description: body.description
     };
 
-    return this.productsService.createProduct(body);
+    return this.productsService.createProduct(body, userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -80,7 +81,7 @@ export class ProductsController {
       order: { ...order, userId: req.user.userId },
     };
 
-    return this.productsService.createOrder(data);
+    // return this.productsService.createOrder(data);
   }
 
   @Get()
@@ -101,7 +102,7 @@ export class ProductsController {
   updateProduct(
       @GetCurrentUserById() userId: string,
       @Param('id') id: string,
-      @Body() body: Product
+      @Body() body: IProduct
 ) {
     return this.productsService.updateProduct({ _id: id, ...body });
   }

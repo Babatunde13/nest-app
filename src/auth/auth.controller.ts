@@ -22,7 +22,7 @@ export class AuthController {
 
   @Post('/signup')
   async signUpLocal(@Body() data: SignUpUser) {
-    if (!data.email || !data.password || !data.name) {
+    if (!data.email || !data.password || !data.fullname) {
       throw new UnprocessableEntityException(
         'email, name and password are required',
       );

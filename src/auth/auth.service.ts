@@ -4,24 +4,28 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { SignInUser, SignUpUser, User } from './types';
-import { v4 as uuidV4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { IUser } from './user.model';
 
 const bcrypt = require('bcryptjs');
 const users: User[] = require('../user.json');
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+      private jwtService: JwtService,
+      @InjectModel('User') private readonly userModel: Model<IUser>
+) {}
 
   async signInLocal(data: SignInUser) {
-    const user = users.find((user) => user.email === data.email);
+    const user = await this.userModel.findOne({ email: data.email });
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    if (bcrypt.compareSync(data.password, user.passwordHash)) {
-      const res: User & { token: string } = { ...user, token: '' };
-      delete res.passwordHash;
+    if (bcrypt.compareSync(data.password, user.password)) {
+      const res: IUser & { token: string } = { ...user, token: '' };
       res.token = this.signUser(res._id, res.email, 'user');
       return res;
     } else {
@@ -30,20 +34,12 @@ export class AuthService {
   }
 
   async signUpLocal(data: SignUpUser) {
-    const hasAccount = users.find((user) => user.email === data.email);
+    const hasAccount = await this.userModel.findOne({ email: data.email });
     if (hasAccount) {
       throw new UnprocessableEntityException('Account already exist');
     }
-    const user = {
-      ...data,
-      passwordHash: bcrypt.hashSync(data.password, 10),
-      _id: uuidV4(),
-    };
-    delete user.password;
-    users.push(user);
-    const res = { ...user };
-    delete res.passwordHash;
-    return res;
+    const user = await this.userModel.create(data)
+    return user.toJSON();
   }
 
   signUser(userId: string, email: string, type: string) {

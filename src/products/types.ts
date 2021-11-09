@@ -2,14 +2,15 @@ export interface Product {
   _id: string;
   name: string;
   price: number;
+  description: string;
   orders: CreateOrder[];
   user: string;
 }
 
 export interface CreateProduct {
   name: string;
+  description: string;
   price: number;
-  user: string;
 }
 
 export interface CreateOrder {
