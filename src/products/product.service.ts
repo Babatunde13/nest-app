@@ -40,7 +40,7 @@ export class ProductsService {
       (p) =>
         p.product.toLowerCase().includes(product.toLowerCase() || '') &&
         p.price > price
-    );
+);
     return res;
   }
 

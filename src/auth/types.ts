@@ -1,0 +1,8 @@
+export type SignInUser = {
+  email: string;
+  password: string;
+};
+
+export type SignUpUser = { name: string } & SignInUser;
+
+export type User = { _id: string, passwordHash: string } & Omit<SignUpUser, 'password'>;
