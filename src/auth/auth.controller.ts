@@ -24,7 +24,7 @@ export class AuthController {
   async signUpLocal(@Body() data: SignUpUser) {
     if (!data.email || !data.password || !data.name) {
       throw new UnprocessableEntityException(
-        'email, name and password are required'
+        'email, name and password are required',
       );
     }
     return await this.authService.signUpLocal(data);
