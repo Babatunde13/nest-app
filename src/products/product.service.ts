@@ -7,21 +7,24 @@ export class ProductsService {
   products: Product[] = [
     {
       _id: '1',
-      product: 'Product 1',
+      name: 'Product 1',
       price: 5000,
       orders: [],
+      user: 'aaaas',
     },
     {
       _id: '2',
-      product: 'Product 2',
+      name: 'Product 2',
       price: 5000,
       orders: [],
+      user: 'aaaas',
     },
     {
       _id: '3',
-      product: 'Product 3',
+      name: 'Product 3',
       price: 5000,
       orders: [],
+      user: 'aaaas',
     },
   ];
 
@@ -38,8 +41,8 @@ export class ProductsService {
   getProducts(product?: string, price?: number) {
     const res = this.products.filter(
       (p) =>
-        p.product.toLowerCase().includes(product.toLowerCase() || '') &&
-        p.price > price
+        p.name.toLowerCase().includes((product || '').toLowerCase()) &&
+        p.price > (price || 0)
 );
     return res;
   }

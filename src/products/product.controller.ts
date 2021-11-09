@@ -7,7 +7,11 @@ import {
   Param,
   Put,
   Delete,
+  UseGuards,
+  Request
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { GetCurrentUserById } from 'src/utils/getUserById.decorator';
 import { ProductsService } from './product.service';
 import { CreateProduct, CreateOrder, Product } from './types';
 
@@ -15,10 +19,14 @@ import { CreateProduct, CreateOrder, Product } from './types';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  createProduct(@Body() body: CreateProduct) {
+  createProduct(
+    @GetCurrentUserById() userId: string,
+    @Body() body: CreateProduct
+  ) {
     // validate body
-    if (!body.product || typeof body.product !== 'string') {
+    if (!body.name || typeof body.name !== 'string') {
       return {
         status: 'bad',
         message: 'Product name should be a string and is required',
@@ -35,20 +43,26 @@ export class ProductsController {
     }
 
     body = {
-      product: body.product,
+      name: body.name,
       price: body.price,
+      user: userId,
     };
 
     return this.productsService.createProduct(body);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('/order/:id')
-  createOrder(@Body() order: CreateOrder, @Param('id') id: string) {
+  createOrder(
+      @Request() req: any,
+      @Body() order: CreateOrder,
+      @Param('id') id: string
+    ) {
     // validate order
-    if (!order.quantity || !order.userId) {
+    if (!order.quantity || order.quantity < 0) {
       return {
         status: 'bad',
-        message: 'quantity of order should be passed ',
+        message: 'quantity of order should be a valid number and is required.',
         ok: false,
       };
     }
@@ -63,7 +77,7 @@ export class ProductsController {
 
     const data = {
       _id: id,
-      order,
+      order: { ...order, userId: req.user.userId },
     };
 
     return this.productsService.createOrder(data);
@@ -82,13 +96,22 @@ export class ProductsController {
     return this.productsService.getProduct(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
-  updateProduct(@Param('id') id: string, @Body() body: Product) {
+  updateProduct(
+      @GetCurrentUserById() userId: string,
+      @Param('id') id: string,
+      @Body() body: Product
+) {
     return this.productsService.updateProduct({ _id: id, ...body });
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  deleteProduct(@Param('id') id: string) {
+  deleteProduct(
+      @GetCurrentUserById() userId: string,
+      @Param('id') id: string
+) {
     return this.productsService.deleteProduct(id);
   }
 }

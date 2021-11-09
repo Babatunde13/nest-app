@@ -1,16 +1,18 @@
 export interface Product {
   _id: string;
-  product: string;
+  name: string;
   price: number;
   orders: CreateOrder[];
+  user: string;
 }
 
 export interface CreateProduct {
-  product: string;
+  name: string;
   price: number;
+  user: string;
 }
 
 export interface CreateOrder {
   quantity: number;
-  userId: number;
+  userId: string;
 }
