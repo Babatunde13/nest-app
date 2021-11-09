@@ -5,23 +5,25 @@ import {
 } from '@nestjs/common';
 import { SignInUser, SignUpUser, User } from './types';
 import { v4 as uuidV4 } from 'uuid';
+import { JwtService } from '@nestjs/jwt';
 
 const bcrypt = require('bcryptjs');
 const users: User[] = require('../user.json');
 
 @Injectable()
 export class AuthService {
+  constructor(private jwtService: JwtService) {}
+
   async signInLocal(data: SignInUser) {
     const user = users.find((user) => user.email === data.email);
-    console.log(user);
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
     if (bcrypt.compareSync(data.password, user.passwordHash)) {
-        const res = { ...user };
-        delete res.passwordHash;
-        return res;
-      return user;
+      const res: User & { token: string } = { ...user, token: '' };
+      delete res.passwordHash;
+      res.token = this.signUser(res._id, res.email, 'user');
+      return res;
     } else {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -42,6 +44,18 @@ export class AuthService {
     const res = { ...user };
     delete res.passwordHash;
     return res;
+  }
+
+  signUser(userId: string, email: string, type: string) {
+    return this.jwtService.sign({
+      sub: userId,
+      email,
+      type,
+    });
+  }
+
+  decodeSignedData(token: string) {
+    return this.jwtService.decode(token);
   }
 
   async getUsers() {
